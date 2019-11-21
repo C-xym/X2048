@@ -201,8 +201,8 @@ public class MainActivity extends AppCompatActivity {
     void setNewBlock() {
         ArrayMap<Integer, Integer> map = mGrid.getNewList();
         Set<Integer> set = map.keySet();
-        Animation scale = new ScaleAnimation((float) 0.95, (float) 1.1, (float) 0.95, (float) 1.1, Animation.RELATIVE_TO_SELF, (float) 0.5, Animation.RELATIVE_TO_SELF, (float) 0.5);
-        scale.setDuration(60);
+        Animation scale = new ScaleAnimation((float) 1.1, 1, (float) 1.1, 1, Animation.RELATIVE_TO_SELF, (float) 0.5, Animation.RELATIVE_TO_SELF, (float) 0.5);
+        scale.setDuration(50);
         for (Integer c : set) {
             mBlocks[c].startAnimation(scale);
         }
