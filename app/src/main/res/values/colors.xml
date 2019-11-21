@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#008577</color>
+    <color name="colorPrimaryDark">#00574B</color>
+    <color name="colorAccent">#D81B60</color>
+    <color name="grid_background">#8B8B8B</color>
+    <color name="blank_block">#C0BEBE</color>
+
+    <color name="block_2">#F0EDED</color>
+    <color name="block_4">#EBD6B1</color>
+    <color name="block_8">#E78D5D</color>
+    <color name="block_16">#EE7134</color>
+    <color name="block_32">#FF5A5A</color>
+    <color name="block_64">#F70404</color>
+    <color name="block_128">#EBEB77</color>
+    <color name="block_256">#F7F736</color>
+    <color name="block_512">#E2E20E</color>
+    <color name="block_1024">#F0F00E</color>
+    <color name="block_2048">#FAFA02</color>
+    <color name="block_4096">#000000</color>
+</resources>
