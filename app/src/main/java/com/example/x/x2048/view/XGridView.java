@@ -30,8 +30,8 @@ public class XGridView extends GridLayout {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        heightMeasureSpec = widthMeasureSpec;
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        //设置高度等于宽度
+        setMeasuredDimension(widthMeasureSpec, widthMeasureSpec);
     }
 
     @Override
