@@ -44,28 +44,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        int[] viewId = new int[]{
-                R.id.block_0,
-                R.id.block_1,
-                R.id.block_2,
-                R.id.block_3,
-                R.id.block_4,
-                R.id.block_5,
-                R.id.block_6,
-                R.id.block_7,
-                R.id.block_8,
-                R.id.block_9,
-                R.id.block_10,
-                R.id.block_11,
-                R.id.block_12,
-                R.id.block_13,
-                R.id.block_14,
-                R.id.block_15
-        };
-        for (int i = 0; i < 16; i++) {
-            mBlocks[i] = findViewById(viewId[i]);
-        }
-
         mGrid = Grid.getInstance();
         mPreferences = getSharedPreferences("grid", MODE_PRIVATE);
         mGrid.load(mPreferences);
@@ -86,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
         drawMap.put(1024, R.drawable.block_1024);
         drawMap.put(2048, R.drawable.block_2048);
         drawMap.put(4096, R.drawable.block_4096);
+
 
 
         ((Button) findViewById(R.id.bt_restart)).setOnClickListener(new View.OnClickListener() {
@@ -110,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         final XGridView xGridView = findViewById(R.id.x_grid_view);
-        xGridView.setOnFlashListener(new XGridView.OnFlashListener() {
+       /* xGridView.setOnFlashListener(new XGridView.OnFlashListener() {
             @Override
             public void onFlash(int direction) {
 
@@ -154,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        setGrid();
+        setGrid();*/
     }
 
     @Override
