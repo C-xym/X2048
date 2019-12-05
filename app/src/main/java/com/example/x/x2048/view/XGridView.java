@@ -8,6 +8,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.GridLayout;
+import android.widget.ImageView;
 
 import com.example.x.x2048.R;
 import com.example.x.x2048.Utils;
@@ -92,8 +93,19 @@ public class XGridView extends GridLayout {
                         dir = Grid.MOVE_DOWN;
                     }
                 }
-                Grid.getInstance().move(dir);
-                mOnFlashListener.onFlash(dir);
+//                Grid.getInstance().move(dir);
+//                mOnFlashListener.onFlash(dir);
+
+                ImageView view=new ImageView(getContext());
+                view.setBackground(getResources().getDrawable(R.drawable.block_0002,getContext().getTheme()));
+                LayoutParams layoutParams=new GridLayout.LayoutParams(GridLayout.spec(1,2,(float) 0.025),GridLayout.spec(1,2,(float)0.025));
+//                layoutParams.width=(Utils.px2dip(getContext(),length)-40) / 4;
+//                layoutParams.height=(Utils.px2dip(getContext(),length)-40) / 4;
+//                layoutParams.setMargins(0,0,0,0);
+                view.setLayoutParams(layoutParams);
+                this.addView(view);
+
+
                 break;
         }
 
