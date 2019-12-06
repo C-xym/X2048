@@ -3,6 +3,7 @@ package com.example.x.x2048.model;
 import android.content.SharedPreferences;
 import android.util.ArrayMap;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Grid {
@@ -17,6 +18,17 @@ public class Grid {
     private int[] arr = new int[16];
     private int[] old = new int[16];
     private int blank;
+
+    public int getNewblock() {
+        return mNewblock;
+    }
+
+    public int getNewType() {
+        return mNewType;
+    }
+
+    private int mNewblock;
+    private int mNewType;
     private boolean isBack;
 
     public boolean isGameOver() {
@@ -27,6 +39,12 @@ public class Grid {
 
     private ArrayMap<Integer, Integer> mMoveList;
     private ArrayMap<Integer, Integer> mNewList;
+
+    public ArrayList<Integer> getRemoveList() {
+        return mRemoveList;
+    }
+
+    private ArrayList<Integer> mRemoveList;
 
     public int[] getArr() {
         return arr;
@@ -44,6 +62,7 @@ public class Grid {
     private Grid() {
         mMoveList = new ArrayMap<>();
         mNewList = new ArrayMap<>();
+        mRemoveList=new ArrayList<>();
         blank = 16;
         isBack = false;
         isGameOver = false;
@@ -91,6 +110,7 @@ public class Grid {
         blank = 16;
         mNewList.clear();
         mMoveList.clear();
+        mRemoveList.clear();
         isBack = false;
         isGameOver = false;
     }
@@ -104,6 +124,7 @@ public class Grid {
         }
         mMoveList.clear();
         mNewList.clear();
+        mRemoveList.clear();
 
         isGameOver = gameOver();
         if (isGameOver) {
@@ -170,6 +191,7 @@ public class Grid {
                 booleans[i - 4] = true;
                 mMoveList.put(a, i - 4);
                 mNewList.put(i - 4, arr[i - 4]);
+                mRemoveList.add(i-4);
                 blank++;
             } else {
                 if (a != i) {
@@ -195,6 +217,7 @@ public class Grid {
                 booleans[i + 4] = true;
                 mMoveList.put(a, i + 4);
                 mNewList.put(i + 4, arr[i + 4]);
+                mRemoveList.add(i+4);
                 blank++;
             } else {
                 if (a != i) {
@@ -220,6 +243,7 @@ public class Grid {
                 booleans[i - 1] = true;
                 mMoveList.put(a, i - 1);
                 mNewList.put(i - 1, arr[i - 1]);
+                mRemoveList.add(i-1);
                 blank++;
             } else {
                 if (a != i) {
@@ -245,6 +269,7 @@ public class Grid {
                 booleans[i + 1] = true;
                 mMoveList.put(a, i + 1);
                 mNewList.put(i + 1, arr[i + 1]);
+                mRemoveList.add(i+1);
                 blank++;
             } else {
                 if (a != i) {
@@ -267,12 +292,15 @@ public class Grid {
             ++i;
         }
         int f = (int) (Math.random() * 10);
+        mNewblock=i-1;
         if (f < 2) {
             arr[i - 1] = 4;
             mNewList.put(i - 1, 4);
+            mNewType=4;
         } else {
             arr[i - 1] = 2;
             mNewList.put(i - 1, 2);
+            mNewType=2;
         }
         blank--;
     }

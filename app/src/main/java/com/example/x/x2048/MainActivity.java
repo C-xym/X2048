@@ -30,15 +30,6 @@ public class MainActivity extends AppCompatActivity {
     private Grid mGrid;
     private SharedPreferences mPreferences;
 
-    private static final int SET_GRID = 0;
-    private MyHandler mHandler;
-    private MyThread mThread;
-    private Executor mExecutor;
-
-    private View[] mBlocks = new View[16];
-
-    private final ArrayMap<Integer, Integer> drawMap = new ArrayMap<>();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,25 +38,6 @@ public class MainActivity extends AppCompatActivity {
         mGrid = Grid.getInstance();
         mPreferences = getSharedPreferences("grid", MODE_PRIVATE);
         mGrid.load(mPreferences);
-
-        mHandler = new MyHandler();
-        mThread = new MyThread();
-
-        drawMap.put(0, R.drawable.blank);
-        drawMap.put(2, R.drawable.block_0002);
-        drawMap.put(4, R.drawable.block_0004);
-        drawMap.put(8, R.drawable.block_0008);
-        drawMap.put(16, R.drawable.block_0016);
-        drawMap.put(32, R.drawable.block_0032);
-        drawMap.put(64, R.drawable.block_0064);
-        drawMap.put(128, R.drawable.block_0128);
-        drawMap.put(256, R.drawable.block_0256);
-        drawMap.put(512, R.drawable.block_0512);
-        drawMap.put(1024, R.drawable.block_1024);
-        drawMap.put(2048, R.drawable.block_2048);
-        drawMap.put(4096, R.drawable.block_4096);
-
-
 
         ((Button) findViewById(R.id.bt_restart)).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -82,13 +54,25 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        mExecutor = Executors.newSingleThreadExecutor();
-
         final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         builder.setMessage("Game Over");
 
 
         final XGridView xGridView = findViewById(R.id.x_grid_view);
+        xGridView.setOnFlashListener(new XGridView.OnFlashListener() {
+            @Override
+            public void onFlash(int direction) {
+                int[] arr=mGrid.getArr();
+                StringBuilder a=new StringBuilder();
+                for(int i=0;i<16;i++){
+                    a.append(arr[i]).append(" ");
+                    if(i==3||i==7||i==11){
+                        a.append("\n");
+                    }
+                }
+                ((TextView)findViewById(R.id.textView)).setText(a);
+            }
+        });
        /* xGridView.setOnFlashListener(new XGridView.OnFlashListener() {
             @Override
             public void onFlash(int direction) {
@@ -142,38 +126,12 @@ public class MainActivity extends AppCompatActivity {
         mGrid.save(mPreferences);
     }
 
-    class MyThread implements Runnable {
-        @Override
-        public void run() {
-            try {
-                Thread.sleep(100);
-                Message msg = mHandler.obtainMessage(SET_GRID);
-                mHandler.sendMessage(msg);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
 
-        }
-    }
-
-    class MyHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-
-            switch (msg.what) {
-                case SET_GRID:
-                    setGrid();
-                    setNewBlock();
-                    break;
-            }
-            super.handleMessage(msg);
-        }
-    }
 
     void setGrid() {
         int[] arr = mGrid.getArr();
         for (int i = 0; i < 16; i++) {
-            mBlocks[i].setBackgroundResource(drawMap.get(arr[i]));
+            //mBlocks[i].setBackgroundResource(drawMap.get(arr[i]));
         }
     }
 
@@ -183,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
         Animation scale = new ScaleAnimation((float) 1.1, 1, (float) 1.1, 1, Animation.RELATIVE_TO_SELF, (float) 0.5, Animation.RELATIVE_TO_SELF, (float) 0.5);
         scale.setDuration(50);
         for (Integer c : set) {
-            mBlocks[c].startAnimation(scale);
+            //mBlocks[c].startAnimation(scale);
         }
     }
 
