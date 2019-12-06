@@ -11,6 +11,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.util.ArrayMap;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.SparseIntArray;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -36,6 +37,8 @@ public class XGridView extends FrameLayout {
     private HashMap<Integer, Integer> mDrawMap = null;
     private View[] mViews;
     private Grid mGrid;
+
+    private SparseIntArray mLeftArray,mTopArray;
 
     public XGridView(Context context) {
         super(context);
@@ -78,6 +81,9 @@ public class XGridView extends FrameLayout {
         mGrid = Grid.getInstance();
 
         mPadding = Utils.dip2px(getContext(), 8);
+
+        mLeftArray=new SparseIntArray();
+        mTopArray= new SparseIntArray();
 
         mDrawMap = new HashMap<>();
         mDrawMap.put(0, R.drawable.blank);
@@ -166,7 +172,7 @@ public class XGridView extends FrameLayout {
             case Grid.MOVE_LEFT:
             case Grid.MOVE_RIGHT:
                 for (Integer c : set) {
-                    int length = (move.get(c) - c) * (mLength + mPadding);
+                    int length = (move.get(c)%4 - mLeftArray.get(mViews[c].getId())) * (mLength + mPadding);
                     ObjectAnimator animator = ObjectAnimator.ofFloat(mViews[c], "TranslationX", length);
                     animators.add(animator);
                 }
@@ -174,7 +180,7 @@ public class XGridView extends FrameLayout {
             case Grid.MOVE_UP:
             case Grid.MOVE_DOWN:
                 for (Integer c : set) {
-                    int length = (move.get(c) / 4 - c / 4) * (mLength + mPadding);
+                    int length = (move.get(c) / 4 - mTopArray.get(mViews[c].getId())) * (mLength + mPadding);
                     ObjectAnimator animator = ObjectAnimator.ofFloat(mViews[c], "TranslationY", length);
                     animators.add(animator);
                 }
@@ -183,36 +189,36 @@ public class XGridView extends FrameLayout {
         animatorSet.playTogether(animators);
         animatorSet.start();
 
-
-        switch (dir) {
-            case Grid.MOVE_LEFT:
-            case Grid.MOVE_RIGHT:
-                for (Integer c : set) {
-                    int length = (move.get(c) - c) * (mLength + mPadding);
-                    int left=mViews[c].getLeft()+length;
-                    int right=mViews[c].getRight()+length;
-                    mViews[c].setLeft(left);
-                    mViews[c].setRight(right);
-
-                    LayoutParams lp= (LayoutParams) mViews[c].getLayoutParams();
-                    lp.leftMargin=left;
-                    mViews[c].setLayoutParams(lp);
-                }
-                break;
-            case Grid.MOVE_UP:
-            case Grid.MOVE_DOWN:
-                for (Integer c : set) {
-                    int length = (move.get(c) / 4 - c / 4) * (mLength + mPadding);
-                    int top=mViews[c].getTop()+length;
-                    int bottom=mViews[c].getBottom()+length;
-                    mViews[c].setTop(top);
-                    mViews[c].setBottom(bottom);
-                    LayoutParams lp= (LayoutParams) mViews[c].getLayoutParams();
-                    lp.topMargin=top;
-                    mViews[c].setLayoutParams(lp);
-                }
-                break;
-        }
+//
+//        switch (dir) {
+//            case Grid.MOVE_LEFT:
+//            case Grid.MOVE_RIGHT:
+//                for (Integer c : set) {
+//                    int length = (move.get(c) - c) * (mLength + mPadding);
+//                    int left=mViews[c].getLeft()+length;
+//                    int right=mViews[c].getRight()+length;
+//                    mViews[c].setLeft(left);
+//                    mViews[c].setRight(right);
+//
+//                    LayoutParams lp= (LayoutParams) mViews[c].getLayoutParams();
+//                    lp.leftMargin=left;
+//                    mViews[c].setLayoutParams(lp);
+//                }
+//                break;
+//            case Grid.MOVE_UP:
+//            case Grid.MOVE_DOWN:
+//                for (Integer c : set) {
+//                    int length = (move.get(c) / 4 - c / 4) * (mLength + mPadding);
+//                    int top=mViews[c].getTop()+length;
+//                    int bottom=mViews[c].getBottom()+length;
+//                    mViews[c].setTop(top);
+//                    mViews[c].setBottom(bottom);
+//                    LayoutParams lp= (LayoutParams) mViews[c].getLayoutParams();
+//                    lp.topMargin=top;
+//                    mViews[c].setLayoutParams(lp);
+//                }
+//                break;
+//        }
 
         for(int i=set.size()-1;i>=0;i--){
             transPosA2B(setArr[i],move.get(setArr[i]));
@@ -291,6 +297,8 @@ public class XGridView extends FrameLayout {
         mViews[postion] = view;
         int x = postion % 4;
         int y = postion / 4;
+        mLeftArray.append(view.getId(),x);
+        mTopArray.append(view.getId(),y);
         LayoutParams params = new FrameLayout.LayoutParams(mLength, mLength);
         params.setMargins(mPadding + x * (mPadding + mLength), mPadding + y * (mPadding + mLength), 0, 0);
         view.setLayoutParams(params);
