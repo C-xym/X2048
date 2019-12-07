@@ -1,23 +1,19 @@
 package com.example.x.x2048.view;
 
 import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.drawable.GradientDrawable;
 import android.util.ArrayMap;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.SparseIntArray;
-import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.accessibility.AccessibilityManager;
 import android.widget.FrameLayout;
-import android.widget.Toast;
 
 import com.example.x.x2048.R;
 import com.example.x.x2048.Utils;
@@ -74,7 +70,9 @@ public class XGridView extends FrameLayout {
 
         mViewList = new ArrayList<>();
         for (int i = 0; i < 16; i++) {
-            mViewList.add(new View(getContext()));
+            View view=new View(getContext());
+            view.setId(i);
+            mViewList.add(view);
         }
         mViews = new View[16];
 
@@ -156,10 +154,6 @@ public class XGridView extends FrameLayout {
 
     private void GridFlash(final int dir) {
 
-        ArrayList<Integer> remove = mGrid.getRemoveList();
-        for (Integer c : remove) {
-            removeBlock(c);
-        }
         final ArrayMap<Integer, Integer> move = mGrid.getMoveList();
         final Set<Integer> set = move.keySet();
         Integer[] setArr = new Integer[set.size()];
@@ -188,48 +182,22 @@ public class XGridView extends FrameLayout {
         }
         animatorSet.playTogether(animators);
         animatorSet.start();
+        animatorSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                trans();
+                addBlock(mGrid.getNewblock(), mGrid.getNewType());
+                ArrayMap<Integer, Integer> map = mGrid.getNewList();
+                Set<Integer> set2 = map.keySet();
+                for (Integer c : set2) {
+                    mViews[c].setBackgroundResource(mDrawMap.get(map.get(c)));
+                }
+            }
+        });
 
-//
-//        switch (dir) {
-//            case Grid.MOVE_LEFT:
-//            case Grid.MOVE_RIGHT:
-//                for (Integer c : set) {
-//                    int length = (move.get(c) - c) * (mLength + mPadding);
-//                    int left=mViews[c].getLeft()+length;
-//                    int right=mViews[c].getRight()+length;
-//                    mViews[c].setLeft(left);
-//                    mViews[c].setRight(right);
-//
-//                    LayoutParams lp= (LayoutParams) mViews[c].getLayoutParams();
-//                    lp.leftMargin=left;
-//                    mViews[c].setLayoutParams(lp);
-//                }
-//                break;
-//            case Grid.MOVE_UP:
-//            case Grid.MOVE_DOWN:
-//                for (Integer c : set) {
-//                    int length = (move.get(c) / 4 - c / 4) * (mLength + mPadding);
-//                    int top=mViews[c].getTop()+length;
-//                    int bottom=mViews[c].getBottom()+length;
-//                    mViews[c].setTop(top);
-//                    mViews[c].setBottom(bottom);
-//                    LayoutParams lp= (LayoutParams) mViews[c].getLayoutParams();
-//                    lp.topMargin=top;
-//                    mViews[c].setLayoutParams(lp);
-//                }
-//                break;
-//        }
-
-        for(int i=set.size()-1;i>=0;i--){
-            transPosA2B(setArr[i],move.get(setArr[i]));
-        }
-
-        addBlock(mGrid.getNewblock(), mGrid.getNewType());
-
-        ArrayMap<Integer, Integer> map = mGrid.getNewList();
-        Set<Integer> set2 = map.keySet();
-        for (Integer c : set2) {
-            mViews[c].setBackgroundResource(mDrawMap.get(map.get(c)));
+        if(animators.isEmpty()){
+            addBlock(mGrid.getNewblock(), mGrid.getNewType());
         }
 
 
@@ -273,6 +241,31 @@ public class XGridView extends FrameLayout {
 //        Log.i("myTest"," "+c);
 //        Log.i("myTest"," "+d);
     }
+
+    private void trans(){
+        ArrayMap<Integer, Integer> move = mGrid.getMoveList();
+        Set<Integer> set = move.keySet();
+
+        for(Integer c:set){
+            int t=move.get(c);
+            if(null!=mViews[t]){
+                mViewList.add(mViews[t]);
+                this.removeView(mViews[t]);
+            }
+            mViews[t]=mViews[c];
+        }
+        if(null!=mViews[mGrid.getNewblock()]){
+            removeBlock(mGrid.getNewblock());
+        }
+
+        int[] arr=mGrid.getArr();
+        for(int i=0;i<16;i++){
+            if(arr[i]==0&&mViews[i]!=null){
+                removeBlock(i);
+            }
+        }
+    }
+
 
     private void removeBlock(int postion) {
         mViewList.add(mViews[postion]);
