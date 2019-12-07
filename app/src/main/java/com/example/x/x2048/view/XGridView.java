@@ -1,8 +1,10 @@
 package com.example.x.x2048.view;
 
 import android.content.Context;
+import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.view.View;
 import android.widget.GridLayout;
 
 import com.example.x.x2048.model.Grid;
@@ -11,6 +13,7 @@ import com.example.x.x2048.model.Grid;
 public class XGridView extends GridLayout {
 
     private float x1, x2, y1, y2;
+    private int mLength, mPadding;
 
     public XGridView(Context context) {
         super(context);
@@ -30,8 +33,22 @@ public class XGridView extends GridLayout {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        int l = widthMeasureSpec & View.MEASURED_SIZE_MASK;
+        mLength = (l - Utils.dip2px(getContext(), 40)) / 4;
         heightMeasureSpec = widthMeasureSpec;
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    }
+
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+
+        mPadding = Utils.dip2px(getContext(), 8);
+        for (int a = 0; a < 4; a++) {
+            for (int b = 0; b < 4; b++) {
+                canvas.drawRoundRect(mPadding + a * (mLength + mPadding), mPadding + b * (mLength + mPadding),
+                        (a + 1) * (mLength + mPadding), (b + 1) * (mLength + mPadding), mPadding / 2, mPadding / 2, bgPaint);
+            }
+        }
     }
 
     @Override
