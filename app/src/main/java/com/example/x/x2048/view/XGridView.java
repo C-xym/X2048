@@ -7,9 +7,7 @@ import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.util.ArrayMap;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.MotionEvent;
 import android.view.View;
@@ -20,22 +18,17 @@ import com.example.x.x2048.Utils;
 import com.example.x.x2048.model.Grid;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Set;
 
 
 public class XGridView extends FrameLayout {
 
     private float x1, x2, y1, y2;
-    private int mLength, mPadding;
+    private int mLength, mPadding, mLP;
     private Paint bgPaint;
-    private ArrayList<View> mViewList = null;
-    private HashMap<Integer, Integer> mDrawMap = null;
+    private SparseIntArray mDrawMap = null;
     private View[] mViews;
     private Grid mGrid;
     private XGridView mXGridView;
-
-    private SparseIntArray mLeftArray, mTopArray;
 
     public XGridView(Context context) {
         super(context);
@@ -61,6 +54,7 @@ public class XGridView extends FrameLayout {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int l = widthMeasureSpec & View.MEASURED_SIZE_MASK;
         mLength = (l - Utils.dip2px(getContext(), 40)) / 4;
+        mLP = mLength + mPadding;
         //设置高度等于宽度
         super.onMeasure(widthMeasureSpec, widthMeasureSpec);
     }
@@ -69,22 +63,12 @@ public class XGridView extends FrameLayout {
         bgPaint = new Paint();
         bgPaint.setColor(getResources().getColor(R.color.blank_block, getContext().getTheme()));
 
-        mViewList = new ArrayList<>();
-        for (int i = 0; i < 16; i++) {
-            View view = new View(getContext());
-            view.setId(i);
-            mViewList.add(view);
-        }
         mViews = new View[16];
-
         mGrid = Grid.getInstance();
-
         mPadding = Utils.dip2px(getContext(), 8);
+        mXGridView = this;
 
-        mLeftArray = new SparseIntArray();
-        mTopArray = new SparseIntArray();
-
-        mDrawMap = new HashMap<>();
+        mDrawMap = new SparseIntArray();
         mDrawMap.put(0, R.drawable.blank);
         mDrawMap.put(2, R.drawable.block_0002);
         mDrawMap.put(4, R.drawable.block_0004);
@@ -98,18 +82,15 @@ public class XGridView extends FrameLayout {
         mDrawMap.put(1024, R.drawable.block_1024);
         mDrawMap.put(2048, R.drawable.block_2048);
         mDrawMap.put(4096, R.drawable.block_4096);
-
-        mXGridView = this;
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-
         for (int a = 0; a < 4; a++) {
             for (int b = 0; b < 4; b++) {
-                canvas.drawRoundRect(mPadding + a * (mLength + mPadding), mPadding + b * (mLength + mPadding),
-                        (a + 1) * (mLength + mPadding), (b + 1) * (mLength + mPadding), mPadding / 2, mPadding / 2, bgPaint);
+                canvas.drawRoundRect(mPadding + a * mLP, mPadding + b * mLP,
+                        (a + 1) * mLP, (b + 1) * mLP, mPadding / 2, mPadding / 2, bgPaint);
             }
         }
     }
@@ -148,8 +129,8 @@ public class XGridView extends FrameLayout {
                     }
                 }
                 Grid.getInstance().move(dir);
-                mOnFlashListener.onFlash(dir);
                 GridFlash(dir);
+                mOnFlashListener.onFlash(dir);
                 break;
         }
         return true;
@@ -157,24 +138,25 @@ public class XGridView extends FrameLayout {
 
     private void GridFlash(final int dir) {
 
-        final ArrayMap<Integer, Integer> move = mGrid.getMoveList();
-        final Set<Integer> set = move.keySet();
+        SparseIntArray move = mGrid.getMoveList();
 
         AnimatorSet animatorSet = new AnimatorSet();
         ArrayList<Animator> animators = new ArrayList<>();
         switch (dir) {
             case Grid.MOVE_LEFT:
             case Grid.MOVE_RIGHT:
-                for (Integer c : set) {
-                    int length = (move.get(c) % 4) * (mLength + mPadding) + mPadding - mViews[c].getLeft();
+                for (int i = 0, s = move.size(); i < s; i++) {
+                    int c = move.keyAt(i);
+                    int length = (move.get(c) % 4) * mLP + mPadding - mViews[c].getLeft();
                     ObjectAnimator animator = ObjectAnimator.ofFloat(mViews[c], "TranslationX", length);
                     animators.add(animator);
                 }
                 break;
             case Grid.MOVE_UP:
             case Grid.MOVE_DOWN:
-                for (Integer c : set) {
-                    int length = (move.get(c) / 4) * (mLength + mPadding) + mPadding - mViews[c].getTop();
+                for (int i = 0, s = move.size(); i < s; i++) {
+                    int c = move.keyAt(i);
+                    int length = (move.get(c) / 4) * mLP + mPadding - mViews[c].getTop();
                     ObjectAnimator animator = ObjectAnimator.ofFloat(mViews[c], "TranslationY", length);
                     animators.add(animator);
                 }
@@ -188,18 +170,8 @@ public class XGridView extends FrameLayout {
                 super.onAnimationEnd(animation);
 
                 int[] trans = mGrid.getTrans();
-                StringBuilder s = new StringBuilder();
-                s.append("test\n");
-                for (int i = 0; i < 16; i++) {
-                    s.append(trans[i]).append(" ");
-                    if (i == 3 || i == 7 || i == 11) {
-                        s.append("\n");
-                    }
-                }
-                Log.i("myTest2", String.valueOf(s));
-
+                int[] arr = mGrid.getIntArr();
                 View[] views = new View[16];
-
 
                 for (int i = 0; i < 16; i++) {
                     if (i != trans[i]) {
@@ -208,20 +180,12 @@ public class XGridView extends FrameLayout {
                         views[i] = mViews[i];
                     }
                 }
-
-                int[] arr = mGrid.getArr();
-
                 for (int i = 0; i < 16; i++) {
                     if (arr[i] == 0 && null != views[i]) {
-//                        mXGridView.removeView(views[i]);
-                        mViewList.add(views[i]);
                         views[i] = null;
                     }
                 }
-
                 if (views[mGrid.getNewblock()] != null) {
-                    mXGridView.removeView(views[mGrid.getNewblock()]);
-                    mViewList.add(views[mGrid.getNewblock()]);
                     views[mGrid.getNewblock()] = null;
                 }
 
@@ -232,42 +196,55 @@ public class XGridView extends FrameLayout {
                         mXGridView.addView(mViews[i]);
                     }
                 }
+                addBlock(mGrid.getNewblock(), mGrid.getNewValue());
 
-                addBlock(mGrid.getNewblock(), mGrid.getNewType());
-
-                for (int i = 0; i < 16; i++) {
-                    if (arr[i] != 0) {
-                        if (mViews[i] != null) {
-                            mViews[i].setBackgroundResource(mDrawMap.get(arr[i]));
-                        }
-                    }
+                SparseIntArray newArray = mGrid.getNewList();
+                for (int i = 0, s = newArray.size(); i < s; i++) {
+                    int k = newArray.keyAt(i);
+                    mViews[k].setBackgroundResource(mDrawMap.get(newArray.get(k)));
                 }
                 //animation new
             }
         });
 
-        if (animators.isEmpty()) {
-            addBlock(mGrid.getNewblock(), mGrid.getNewType());
+        if (animators.isEmpty() && mGrid.isEffectiveMove()) {
+            addBlock(mGrid.getNewblock(), mGrid.getNewValue());
         }
     }
 
     private void addBlock(int postion, int drawId) {
-//         View view = mViewList.get(mViewList.size() - 1);
-//        mViewList.remove(mViewList.size() - 1);
         View view = new View(getContext());
-        if (null != mViews[postion]) {
-            Log.i("myTest", " " + "error2");
-        }
         mViews[postion] = view;
-        int x = postion % 4;
-        int y = postion / 4;
-        mLeftArray.append(view.getId(), x);
-        mTopArray.append(view.getId(), y);
         LayoutParams params = new FrameLayout.LayoutParams(mLength, mLength);
-        params.setMargins(mPadding + x * (mPadding + mLength), mPadding + y * (mPadding + mLength), 0, 0);
+        params.setMargins(mPadding + (postion % 4) * mLP, mPadding + (postion / 4) * mLP, 0, 0);
         view.setLayoutParams(params);
         view.setBackgroundResource(mDrawMap.get(drawId));
         this.addView(view);
+    }
+
+    public void reStart() {
+        mXGridView.removeAllViews();
+        mGrid.reStart();
+    }
+
+    public void back() {
+        mXGridView.removeAllViews();
+        mGrid.back();
+        int[] arr = mGrid.getIntArr();
+        for (int i = 0; i < 16; i++) {
+            if (arr[i] != 0) {
+                addBlock(i, arr[i]);
+            }
+        }
+    }
+
+    public void setGrid() {
+        int[] arr = mGrid.getIntArr();
+        for (int i = 0; i < 16; i++) {
+            if (arr[i] != 0) {
+                addBlock(i, arr[i]);
+            }
+        }
     }
 
     public interface OnFlashListener {
