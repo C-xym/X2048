@@ -17,6 +17,12 @@ public class Grid {
 
     private int[] arr = new int[16];
     private int[] old = new int[16];
+
+    public int[] getTrans() {
+        return trans;
+    }
+
+    private int[] trans =new int[16];
     private int blank;
 
     public int getNewblock() {
@@ -133,6 +139,9 @@ public class Grid {
 
         int[] temp = arr.clone();
 
+        for(int i=0;i<16;i++){
+            trans[i]=i;
+        }
 
         switch (orientation) {
             case MOVE_UP:
@@ -190,6 +199,7 @@ public class Grid {
                 arr[i - 4] *= 2;
                 booleans[i - 4] = true;
                 mMoveList.put(a, i - 4);
+                trans[i-4]=a;
                 mNewList.put(i - 4, arr[i - 4]);
                 mRemoveList.add(i-4);
                 blank++;
@@ -198,6 +208,7 @@ public class Grid {
                     arr[i] = arr[a];
                     arr[a] = 0;
                     mMoveList.put(a, i);
+                    trans[i]=a;
                 }
             }
         }
@@ -216,6 +227,7 @@ public class Grid {
                 arr[i + 4] *= 2;
                 booleans[i + 4] = true;
                 mMoveList.put(a, i + 4);
+                trans[i+4]=a;
                 mNewList.put(i + 4, arr[i + 4]);
                 mRemoveList.add(i+4);
                 blank++;
@@ -224,6 +236,7 @@ public class Grid {
                     arr[i] = arr[a];
                     arr[a] = 0;
                     mMoveList.put(a, i);
+                    trans[i]=a;
                 }
             }
         }
@@ -242,6 +255,7 @@ public class Grid {
                 arr[i - 1] *= 2;
                 booleans[i - 1] = true;
                 mMoveList.put(a, i - 1);
+                trans[i-1]=a;
                 mNewList.put(i - 1, arr[i - 1]);
                 mRemoveList.add(i-1);
                 blank++;
@@ -250,6 +264,7 @@ public class Grid {
                     arr[i] = arr[a];
                     arr[a] = 0;
                     mMoveList.put(a, i);
+                    trans[i]=a;
                 }
             }
         }
@@ -268,6 +283,7 @@ public class Grid {
                 arr[i + 1] *= 2;
                 booleans[i + 1] = true;
                 mMoveList.put(a, i + 1);
+                trans[i+1]=a;
                 mNewList.put(i + 1, arr[i + 1]);
                 mRemoveList.add(i+1);
                 blank++;
@@ -276,6 +292,7 @@ public class Grid {
                     arr[i] = arr[a];
                     arr[a] = 0;
                     mMoveList.put(a, i);
+                    trans[i]=a;
                 }
             }
         }

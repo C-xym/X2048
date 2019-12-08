@@ -33,8 +33,9 @@ public class XGridView extends FrameLayout {
     private HashMap<Integer, Integer> mDrawMap = null;
     private View[] mViews;
     private Grid mGrid;
+    private XGridView mXGridView;
 
-    private SparseIntArray mLeftArray,mTopArray;
+    private SparseIntArray mLeftArray, mTopArray;
 
     public XGridView(Context context) {
         super(context);
@@ -70,7 +71,7 @@ public class XGridView extends FrameLayout {
 
         mViewList = new ArrayList<>();
         for (int i = 0; i < 16; i++) {
-            View view=new View(getContext());
+            View view = new View(getContext());
             view.setId(i);
             mViewList.add(view);
         }
@@ -80,8 +81,8 @@ public class XGridView extends FrameLayout {
 
         mPadding = Utils.dip2px(getContext(), 8);
 
-        mLeftArray=new SparseIntArray();
-        mTopArray= new SparseIntArray();
+        mLeftArray = new SparseIntArray();
+        mTopArray = new SparseIntArray();
 
         mDrawMap = new HashMap<>();
         mDrawMap.put(0, R.drawable.blank);
@@ -97,6 +98,8 @@ public class XGridView extends FrameLayout {
         mDrawMap.put(1024, R.drawable.block_1024);
         mDrawMap.put(2048, R.drawable.block_2048);
         mDrawMap.put(4096, R.drawable.block_4096);
+
+        mXGridView = this;
     }
 
     @Override
@@ -156,9 +159,6 @@ public class XGridView extends FrameLayout {
 
         final ArrayMap<Integer, Integer> move = mGrid.getMoveList();
         final Set<Integer> set = move.keySet();
-        Integer[] setArr = new Integer[set.size()];
-        set.toArray(setArr);
-
 
         AnimatorSet animatorSet = new AnimatorSet();
         ArrayList<Animator> animators = new ArrayList<>();
@@ -166,7 +166,7 @@ public class XGridView extends FrameLayout {
             case Grid.MOVE_LEFT:
             case Grid.MOVE_RIGHT:
                 for (Integer c : set) {
-                    int length = (move.get(c)%4 - mLeftArray.get(mViews[c].getId())) * (mLength + mPadding);
+                    int length = (move.get(c) % 4) * (mLength + mPadding) + mPadding - mViews[c].getLeft();
                     ObjectAnimator animator = ObjectAnimator.ofFloat(mViews[c], "TranslationX", length);
                     animators.add(animator);
                 }
@@ -174,7 +174,7 @@ public class XGridView extends FrameLayout {
             case Grid.MOVE_UP:
             case Grid.MOVE_DOWN:
                 for (Integer c : set) {
-                    int length = (move.get(c) / 4 - mTopArray.get(mViews[c].getId())) * (mLength + mPadding);
+                    int length = (move.get(c) / 4) * (mLength + mPadding) + mPadding - mViews[c].getTop();
                     ObjectAnimator animator = ObjectAnimator.ofFloat(mViews[c], "TranslationY", length);
                     animators.add(animator);
                 }
@@ -186,112 +186,83 @@ public class XGridView extends FrameLayout {
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
-                trans();
-                addBlock(mGrid.getNewblock(), mGrid.getNewType());
-                ArrayMap<Integer, Integer> map = mGrid.getNewList();
-                Set<Integer> set2 = map.keySet();
-                for (Integer c : set2) {
-                    mViews[c].setBackgroundResource(mDrawMap.get(map.get(c)));
+
+                int[] trans = mGrid.getTrans();
+                StringBuilder s = new StringBuilder();
+                s.append("test\n");
+                for (int i = 0; i < 16; i++) {
+                    s.append(trans[i]).append(" ");
+                    if (i == 3 || i == 7 || i == 11) {
+                        s.append("\n");
+                    }
                 }
+                Log.i("myTest2", String.valueOf(s));
+
+                View[] views = new View[16];
+
+
+                for (int i = 0; i < 16; i++) {
+                    if (i != trans[i]) {
+                        views[i] = mViews[trans[i]];
+                    } else {
+                        views[i] = mViews[i];
+                    }
+                }
+
+                int[] arr = mGrid.getArr();
+
+                for (int i = 0; i < 16; i++) {
+                    if (arr[i] == 0 && null != views[i]) {
+//                        mXGridView.removeView(views[i]);
+                        mViewList.add(views[i]);
+                        views[i] = null;
+                    }
+                }
+
+                if (views[mGrid.getNewblock()] != null) {
+                    mXGridView.removeView(views[mGrid.getNewblock()]);
+                    mViewList.add(views[mGrid.getNewblock()]);
+                    views[mGrid.getNewblock()] = null;
+                }
+
+                mXGridView.removeAllViews();
+                for (int i = 0; i < 16; i++) {
+                    mViews[i] = views[i];
+                    if (null != mViews[i]) {
+                        mXGridView.addView(mViews[i]);
+                    }
+                }
+
+                addBlock(mGrid.getNewblock(), mGrid.getNewType());
+
+                for (int i = 0; i < 16; i++) {
+                    if (arr[i] != 0) {
+                        if (mViews[i] != null) {
+                            mViews[i].setBackgroundResource(mDrawMap.get(arr[i]));
+                        }
+                    }
+                }
+                //animation new
             }
         });
 
-        if(animators.isEmpty()){
+        if (animators.isEmpty()) {
             addBlock(mGrid.getNewblock(), mGrid.getNewType());
         }
-
-
-//        StringBuilder a=new StringBuilder(),b=new StringBuilder(),c=new StringBuilder(),d= new StringBuilder();
-//        for(int i=0;i<4;i++){
-//            if(null==mViews[i]){
-//                a.append("0 ");
-//            }
-//            else {
-//                a.append("1 ");
-//            }
-//        }
-//        for(int i=4;i<8;i++){
-//            if(null==mViews[i]){
-//                b.append("0 ");
-//            }
-//            else {
-//                b.append("1 ");
-//            }
-//        }
-//        for(int i=8;i<12;i++){
-//            if(null==mViews[i]){
-//                c.append("0 ");
-//            }
-//            else {
-//                c.append("1 ");
-//            }
-//        }
-//        for(int i=12;i<16;i++){
-//            if(null==mViews[i]){
-//                d.append("0 ");
-//            }
-//            else {
-//                d.append("1 ");
-//            }
-//        }
-//
-//        Log.i("myTest"," "+mViewList.size());
-//        Log.i("myTest"," "+a);
-//        Log.i("myTest"," "+b);
-//        Log.i("myTest"," "+c);
-//        Log.i("myTest"," "+d);
-    }
-
-    private void trans(){
-        ArrayMap<Integer, Integer> move = mGrid.getMoveList();
-        Set<Integer> set = move.keySet();
-
-        for(Integer c:set){
-            int t=move.get(c);
-            if(null!=mViews[t]){
-                mViewList.add(mViews[t]);
-                this.removeView(mViews[t]);
-            }
-            mViews[t]=mViews[c];
-        }
-        if(null!=mViews[mGrid.getNewblock()]){
-            removeBlock(mGrid.getNewblock());
-        }
-
-        int[] arr=mGrid.getArr();
-        for(int i=0;i<16;i++){
-            if(arr[i]==0&&mViews[i]!=null){
-                removeBlock(i);
-            }
-        }
-    }
-
-
-    private void removeBlock(int postion) {
-        mViewList.add(mViews[postion]);
-        this.removeView(mViews[postion]);
-        mViews[postion] = null;
-    }
-
-    private void transPosA2B(int a, int b) {
-        if(null!=mViews[b]){
-            Log.i("myTest"," "+"error");
-        }
-        mViews[b] = mViews[a];
-        mViews[a] = null;
     }
 
     private void addBlock(int postion, int drawId) {
-        View view = mViewList.get(mViewList.size() - 1);
-        mViewList.remove(mViewList.size() - 1);
-        if(null!=mViews[postion]){
-            Log.i("myTest"," "+"error2");
+//         View view = mViewList.get(mViewList.size() - 1);
+//        mViewList.remove(mViewList.size() - 1);
+        View view = new View(getContext());
+        if (null != mViews[postion]) {
+            Log.i("myTest", " " + "error2");
         }
         mViews[postion] = view;
         int x = postion % 4;
         int y = postion / 4;
-        mLeftArray.append(view.getId(),x);
-        mTopArray.append(view.getId(),y);
+        mLeftArray.append(view.getId(), x);
+        mTopArray.append(view.getId(), y);
         LayoutParams params = new FrameLayout.LayoutParams(mLength, mLength);
         params.setMargins(mPadding + x * (mPadding + mLength), mPadding + y * (mPadding + mLength), 0, 0);
         view.setLayoutParams(params);
