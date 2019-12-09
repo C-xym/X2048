@@ -13,7 +13,6 @@ import com.example.x.x2048.view.XGridView;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Grid mGrid;
     private SharedPreferences mPreferences;
 
     @Override
@@ -21,9 +20,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mGrid = Grid.getInstance();
         mPreferences = getSharedPreferences("grid", MODE_PRIVATE);
-        mGrid.load(mPreferences);
+        Grid.getInstance().load(mPreferences);
         final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         builder.setMessage("Game Over");
 
@@ -45,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
         xGridView.setOnFlashListener(new XGridView.OnFlashListener() {
             @Override
             public void onFlash(int direction) {
-                if (mGrid.isGameOver()) {
+                if (Grid.getInstance().isGameOver()) {
                     builder.create().show();
                 }
             }
@@ -61,6 +59,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        mGrid.save(mPreferences);
+        Grid.getInstance().save(mPreferences);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Grid.getInstance().destroy();
     }
 }

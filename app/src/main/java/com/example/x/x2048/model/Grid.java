@@ -1,6 +1,7 @@
 package com.example.x.x2048.model;
 
 import android.content.SharedPreferences;
+import android.util.Log;
 import android.util.SparseIntArray;
 
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ public class Grid {
     public static final int MOVE_DOWN = 2;
     public static final int MOVE_LEFT = 3;
 
-    private static Grid sIns;
+    private static volatile Grid sIns;
 
     private ArrayList<Block> mBlockList;
     private SparseIntArray mMoveList;
@@ -77,6 +78,7 @@ public class Grid {
 
     private Grid() {
 
+        Log.i("myTest", "grid");
         mBlockList = new ArrayList<>();
         for (int i = 0; i < 16; i++) {
             Block block = new Block(i, 0, 0);
@@ -94,9 +96,17 @@ public class Grid {
 
     public static Grid getInstance() {
         if (sIns == null) {
-            sIns = new Grid();
+            synchronized (Grid.class) {
+                if (sIns == null) {
+                    sIns = new Grid();
+                }
+            }
         }
         return sIns;
+    }
+
+    public void destroy() {
+        sIns = null;
     }
 
     public void load(SharedPreferences preferences) {

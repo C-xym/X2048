@@ -31,6 +31,7 @@ public class XGridView extends FrameLayout {
     private View[] mViews;
     private Grid mGrid;
     private XGridView mXGridView;
+    private boolean isAnimaFinish;
 
     public XGridView(Context context) {
         super(context);
@@ -69,6 +70,7 @@ public class XGridView extends FrameLayout {
         mGrid = Grid.getInstance();
         mPadding = Utils.dip2px(getContext(), 8);
         mXGridView = this;
+        isAnimaFinish = true;
 
         mDrawMap = new SparseIntArray();
         mDrawMap.put(0, R.drawable.blank);
@@ -130,9 +132,12 @@ public class XGridView extends FrameLayout {
                         dir = Grid.MOVE_DOWN;
                     }
                 }
-                Grid.getInstance().move(dir);
-                GridFlash(dir);
-                mOnFlashListener.onFlash(dir);
+                if (isAnimaFinish) {
+                    isAnimaFinish = false;
+                    Grid.getInstance().move(dir);
+                    GridFlash(dir);
+                    mOnFlashListener.onFlash(dir);
+                }
                 break;
         }
         return true;
@@ -152,7 +157,7 @@ public class XGridView extends FrameLayout {
                     int length = (move.get(c) % 4) * mLP + mPadding - mViews[c].getLeft();
                     ObjectAnimator animator = ObjectAnimator.ofFloat(mViews[c], "TranslationX", length);
                     animator.setInterpolator(new AccelerateDecelerateInterpolator());
-                    animator.setDuration(200);
+                    animator.setDuration(120);
                     animators.add(animator);
                 }
                 break;
@@ -163,7 +168,7 @@ public class XGridView extends FrameLayout {
                     int length = (move.get(c) / 4) * mLP + mPadding - mViews[c].getTop();
                     ObjectAnimator animator = ObjectAnimator.ofFloat(mViews[c], "TranslationY", length);
                     animator.setInterpolator(new AccelerateDecelerateInterpolator());
-                    animator.setDuration(200);
+                    animator.setDuration(120);
                     animators.add(animator);
                 }
                 break;
@@ -200,14 +205,14 @@ public class XGridView extends FrameLayout {
                 }
                 addBlock(mGrid.getNewblock(), mGrid.getNewValue());
 
-                AnimatorSet scaleSet=new AnimatorSet();
-                ArrayList<Animator> scaleList=new ArrayList<>();
+                AnimatorSet scaleSet = new AnimatorSet();
+                ArrayList<Animator> scaleList = new ArrayList<>();
                 SparseIntArray newArray = mGrid.getNewList();
                 for (int i = 0, s = newArray.size(); i < s; i++) {
                     int k = newArray.keyAt(i);
                     mViews[k].setBackgroundResource(mDrawMap.get(newArray.get(k)));
-                    ObjectAnimator animatorX=ObjectAnimator.ofFloat(mViews[k],"ScaleX",(float) 0.98,(float) 1.08,(float) 1.0);
-                    ObjectAnimator animatorY=ObjectAnimator.ofFloat(mViews[k],"ScaleY",(float) 0.98,(float) 1.08,(float) 1.0);
+                    ObjectAnimator animatorX = ObjectAnimator.ofFloat(mViews[k], "ScaleX", (float) 0.95, (float) 1.12, (float) 1.0);
+                    ObjectAnimator animatorY = ObjectAnimator.ofFloat(mViews[k], "ScaleY", (float) 0.95, (float) 1.12, (float) 1.0);
                     animatorX.setInterpolator(new AccelerateInterpolator());
                     animatorY.setInterpolator(new AccelerateInterpolator());
                     animatorX.setDuration(100);
@@ -215,15 +220,22 @@ public class XGridView extends FrameLayout {
                     scaleList.add(animatorX);
                     scaleList.add(animatorY);
                 }
-                //animation new
                 scaleSet.playTogether(scaleList);
                 scaleSet.start();
+                isAnimaFinish = true;
+            }
 
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                isAnimaFinish = true;
             }
         });
 
-        if (animators.isEmpty() && mGrid.isEffectiveMove()) {
-            addBlock(mGrid.getNewblock(), mGrid.getNewValue());
+        if (animators.isEmpty()) {
+            isAnimaFinish = true;
+            if (mGrid.isEffectiveMove()) {
+                addBlock(mGrid.getNewblock(), mGrid.getNewValue());
+            }
         }
     }
 
