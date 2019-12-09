@@ -1,7 +1,6 @@
 package com.example.x.x2048.model;
 
 import android.content.SharedPreferences;
-import android.util.Log;
 import android.util.SparseIntArray;
 
 import java.util.ArrayList;
@@ -49,7 +48,6 @@ public class Grid {
         return mNewValue;
     }
 
-
     public boolean isGameOver() {
         return mGameOver;
     }
@@ -78,7 +76,6 @@ public class Grid {
 
     private Grid() {
 
-        Log.i("myTest", "grid");
         mBlockList = new ArrayList<>();
         for (int i = 0; i < 16; i++) {
             Block block = new Block(i, 0, 0);

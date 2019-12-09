@@ -181,7 +181,6 @@ public class XGridView extends FrameLayout {
                 super.onAnimationEnd(animation);
 
                 int[] trans = mGrid.getTrans();
-                int[] arr = mGrid.getIntArr();
                 View[] views = new View[16];
 
                 for (int i = 0; i < 16; i++) {
