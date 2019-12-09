@@ -35,6 +35,7 @@ public class Grid {
     public boolean isEffectiveMove() {
         return mEffectiveMove;
     }
+
     public int[] getTrans() {
         return trans;
     }
@@ -51,9 +52,6 @@ public class Grid {
     public boolean isGameOver() {
         return mGameOver;
     }
-
-
-
 
 
     public int[] getIntArr() {
@@ -158,6 +156,9 @@ public class Grid {
             Block block = new Block(i, 0, 0);
             mBlockList.add(block);
         }
+        for (int i = 0; i < 16; i++) {
+            trans[i] = i;
+        }
         mBlocks = new Block[16];
         blank = 16;
         mNewList.clear();
@@ -206,7 +207,7 @@ public class Grid {
                 break;
         }
 
-        if (mMoveList.size()>0) {
+        if (mMoveList.size() > 0) {
             genNewBlock();
             mBack = true;
             mEffectiveMove = true;
@@ -216,19 +217,16 @@ public class Grid {
         }
     }
 
-    //.mValue
     private boolean gameOver() {
         if (blank != 0) return false;
         for (int i = 1; i < 15; i += 4) {
             if (mBlocks[i].mValue == mBlocks[i - 1].mValue || mBlocks[i].mValue == mBlocks[i + 1].mValue || mBlocks[i + 1].mValue == mBlocks[i + 2].mValue)
                 return false;
         }
-
         for (int i = 4; i < 8; i++) {
             if (mBlocks[i].mValue == mBlocks[i - 4].mValue || mBlocks[i].mValue == mBlocks[i + 4].mValue || mBlocks[i + 4].mValue == mBlocks[i + 8].mValue)
                 return false;
         }
-
         return true;
     }
 
@@ -237,18 +235,19 @@ public class Grid {
 
         boolean[] booleans = new boolean[16];//false
         for (int a = 4; a < 16; a++) {
+            if (mBlocks[a] == null) continue;
             int i = a;
-            if (mBlocks[i] == null) continue;
             while (i - 4 >= 0 && mBlocks[i - 4] == null) {
                 i = i - 4;
             }
             if (i - 4 >= 0 && mBlocks[i - 4].mValue == mBlocks[a].mValue && !booleans[i - 4]) {
-                moveAdd(a,i,booleans,-4);
+                moveAdd(a, i, booleans, -4);
             } else {
                 if (a != i) {
                     mBlocks[i] = mBlocks[a];
                     mBlocks[a] = null;
                     mMoveList.put(a, i);
+                    trans[a] = 16;
                     trans[i] = a;
                 }
             }
@@ -258,18 +257,19 @@ public class Grid {
     private void moveDown() {
         boolean[] booleans = new boolean[16];//false
         for (int a = 11; a >= 0; a--) {
+            if (mBlocks[a] == null) continue;
             int i = a;
-            if (mBlocks[i] == null) continue;
             while (i + 4 < 16 && mBlocks[i + 4] == null) {
                 i = i + 4;
             }
             if (i + 4 < 16 && mBlocks[i + 4].mValue == mBlocks[a].mValue && !booleans[i + 4]) {
-                moveAdd(a,i,booleans,4);
+                moveAdd(a, i, booleans, 4);
             } else {
                 if (a != i) {
                     mBlocks[i] = mBlocks[a];
                     mBlocks[a] = null;
                     mMoveList.put(a, i);
+                    trans[a] = 16;
                     trans[i] = a;
                 }
             }
@@ -279,18 +279,19 @@ public class Grid {
     private void moveLeft() {
         boolean[] booleans = new boolean[16];//false
         for (int a = 1; a < 16; a++) {
+            if (mBlocks[a] == null) continue;
             int i = a;
-            if (mBlocks[i] == null) continue;
             while (i % 4 - 1 >= 0 && mBlocks[i - 1] == null) {
                 i = i - 1;
             }
             if (i % 4 - 1 >= 0 && mBlocks[i - 1].mValue == mBlocks[a].mValue && !booleans[i - 1]) {
-                moveAdd(a,i,booleans,-1);
+                moveAdd(a, i, booleans, -1);
             } else {
                 if (a != i) {
                     mBlocks[i] = mBlocks[a];
                     mBlocks[a] = null;
                     mMoveList.put(a, i);
+                    trans[a] = 16;
                     trans[i] = a;
                 }
             }
@@ -300,30 +301,32 @@ public class Grid {
     private void moveRight() {
         boolean[] booleans = new boolean[16];//false
         for (int a = 14; a >= 0; a--) {
+            if (mBlocks[a] == null) continue;
             int i = a;
-            if (mBlocks[i] == null) continue;
             while (i % 4 + 1 < 4 && mBlocks[i + 1] == null) {
                 i = i + 1;
             }
             if (i % 4 + 1 < 4 && mBlocks[i + 1].mValue == mBlocks[a].mValue && !booleans[i + 1]) {
-                moveAdd(a,i,booleans,1);
+                moveAdd(a, i, booleans, 1);
             } else {
                 if (a != i) {
                     mBlocks[i] = mBlocks[a];
                     mBlocks[a] = null;
                     mMoveList.put(a, i);
+                    trans[a] = 16;
                     trans[i] = a;
                 }
             }
         }
     }
 
-    private void moveAdd(int a,int i,boolean[] booleans,int x){
+    private void moveAdd(int a, int i, boolean[] booleans, int x) {
         mBlockList.add(mBlocks[a]);
         mBlocks[a] = null;
         mBlocks[i + x].mValue *= 2;
         booleans[i + x] = true;
         mMoveList.put(a, i + x);
+        trans[a] = 16;
         trans[i + x] = a;
         mNewList.put(i + x, mBlocks[i + x].mValue);
         blank++;

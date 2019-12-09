@@ -11,6 +11,10 @@ import android.util.AttributeSet;
 import android.util.SparseIntArray;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.AnticipateInterpolator;
+import android.view.animation.BounceInterpolator;
 import android.widget.FrameLayout;
 
 import com.example.x.x2048.R;
@@ -141,7 +145,7 @@ public class XGridView extends FrameLayout {
         SparseIntArray move = mGrid.getMoveList();
 
         AnimatorSet animatorSet = new AnimatorSet();
-        ArrayList<Animator> animators = new ArrayList<>();
+        final ArrayList<Animator> animators = new ArrayList<>();
         switch (dir) {
             case Grid.MOVE_LEFT:
             case Grid.MOVE_RIGHT:
@@ -149,6 +153,8 @@ public class XGridView extends FrameLayout {
                     int c = move.keyAt(i);
                     int length = (move.get(c) % 4) * mLP + mPadding - mViews[c].getLeft();
                     ObjectAnimator animator = ObjectAnimator.ofFloat(mViews[c], "TranslationX", length);
+                    animator.setInterpolator(new AccelerateDecelerateInterpolator());
+                    animator.setDuration(200);
                     animators.add(animator);
                 }
                 break;
@@ -158,6 +164,8 @@ public class XGridView extends FrameLayout {
                     int c = move.keyAt(i);
                     int length = (move.get(c) / 4) * mLP + mPadding - mViews[c].getTop();
                     ObjectAnimator animator = ObjectAnimator.ofFloat(mViews[c], "TranslationY", length);
+                    animator.setInterpolator(new AccelerateDecelerateInterpolator());
+                    animator.setDuration(200);
                     animators.add(animator);
                 }
                 break;
@@ -175,18 +183,14 @@ public class XGridView extends FrameLayout {
 
                 for (int i = 0; i < 16; i++) {
                     if (i != trans[i]) {
-                        views[i] = mViews[trans[i]];
+                        if (trans[i] == 16) {
+                            views[i] = null;
+                        } else {
+                            views[i] = mViews[trans[i]];
+                        }
                     } else {
                         views[i] = mViews[i];
                     }
-                }
-                for (int i = 0; i < 16; i++) {
-                    if (arr[i] == 0 && null != views[i]) {
-                        views[i] = null;
-                    }
-                }
-                if (views[mGrid.getNewblock()] != null) {
-                    views[mGrid.getNewblock()] = null;
                 }
 
                 mXGridView.removeAllViews();
@@ -198,12 +202,25 @@ public class XGridView extends FrameLayout {
                 }
                 addBlock(mGrid.getNewblock(), mGrid.getNewValue());
 
+                AnimatorSet scaleSet=new AnimatorSet();
+                ArrayList<Animator> scaleList=new ArrayList<>();
                 SparseIntArray newArray = mGrid.getNewList();
                 for (int i = 0, s = newArray.size(); i < s; i++) {
                     int k = newArray.keyAt(i);
                     mViews[k].setBackgroundResource(mDrawMap.get(newArray.get(k)));
+                    ObjectAnimator animatorX=ObjectAnimator.ofFloat(mViews[k],"ScaleX",(float) 0.98,(float) 1.08,(float) 1.0);
+                    ObjectAnimator animatorY=ObjectAnimator.ofFloat(mViews[k],"ScaleY",(float) 0.98,(float) 1.08,(float) 1.0);
+                    animatorX.setInterpolator(new AccelerateInterpolator());
+                    animatorY.setInterpolator(new AccelerateInterpolator());
+                    animatorX.setDuration(100);
+                    animatorY.setDuration(100);
+                    scaleList.add(animatorX);
+                    scaleList.add(animatorY);
                 }
                 //animation new
+                scaleSet.playTogether(scaleList);
+                scaleSet.start();
+
             }
         });
 
@@ -224,11 +241,13 @@ public class XGridView extends FrameLayout {
 
     public void reStart() {
         mXGridView.removeAllViews();
+        mViews = new View[16];
         mGrid.reStart();
     }
 
     public void back() {
         mXGridView.removeAllViews();
+        mViews = new View[16];
         mGrid.back();
         int[] arr = mGrid.getIntArr();
         for (int i = 0; i < 16; i++) {
