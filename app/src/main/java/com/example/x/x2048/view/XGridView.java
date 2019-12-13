@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.util.AttributeSet;
@@ -24,6 +25,9 @@ import java.util.ArrayList;
 
 public class XGridView extends FrameLayout {
 
+    private final static int ORIENTATION_VERTICL = 0;
+    private final static int ORIENTATION_HORIZONTAL = 1;
+
     private float x1, x2, y1, y2;
     private int mLength, mPadding, mLP;
     private Paint bgPaint;
@@ -32,6 +36,7 @@ public class XGridView extends FrameLayout {
     private Grid mGrid;
     private XGridView mXGridView;
     private boolean isAnimaFinish;
+    private int mOrientation;
 
     public XGridView(Context context) {
         super(context);
@@ -41,25 +46,48 @@ public class XGridView extends FrameLayout {
     public XGridView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
+        TypedArray typedArray = context.getTheme().obtainStyledAttributes(attrs, R.styleable.XGridView, 0, 0);
+        try {
+            mOrientation = typedArray.getInt(R.styleable.XGridView_orientation, ORIENTATION_VERTICL);
+        } finally {
+            typedArray.recycle();
+        }
     }
 
     public XGridView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
+        TypedArray typedArray = context.getTheme().obtainStyledAttributes(attrs, R.styleable.XGridView, 0, 0);
+        try {
+            mOrientation = typedArray.getInt(R.styleable.XGridView_orientation, ORIENTATION_VERTICL);
+        } finally {
+            typedArray.recycle();
+        }
     }
 
     public XGridView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         init();
+        TypedArray typedArray = context.getTheme().obtainStyledAttributes(attrs, R.styleable.XGridView, 0, 0);
+        try {
+            mOrientation = typedArray.getInt(R.styleable.XGridView_orientation, ORIENTATION_VERTICL);
+        } finally {
+            typedArray.recycle();
+        }
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int l = widthMeasureSpec & View.MEASURED_SIZE_MASK;
-        mLength = (l - Utils.dip2px(getContext(), 40)) / 4;
+        int L;
+        if (mOrientation == ORIENTATION_HORIZONTAL) {
+            L = heightMeasureSpec;
+        } else {
+            L = widthMeasureSpec;
+        }
+        mLength = (L & View.MEASURED_SIZE_MASK - mPadding * 5) / 4;
         mLP = mLength + mPadding;
         //设置高度等于宽度
-        super.onMeasure(widthMeasureSpec, widthMeasureSpec);
+        super.onMeasure(L, L);
     }
 
     private void init() {
@@ -71,6 +99,7 @@ public class XGridView extends FrameLayout {
         mPadding = Utils.dip2px(getContext(), 8);
         mXGridView = this;
         isAnimaFinish = true;
+        mOrientation = ORIENTATION_VERTICL;
 
         mDrawMap = new SparseIntArray();
         mDrawMap.put(0, R.drawable.blank);
@@ -274,6 +303,16 @@ public class XGridView extends FrameLayout {
             }
         }
     }
+
+    public void btnAction(int dir) {
+        if (isAnimaFinish) {
+            isAnimaFinish = false;
+            Grid.getInstance().move(dir);
+            GridFlash(dir);
+            mOnFlashListener.onFlash(dir);
+        }
+    }
+
 
     public interface OnFlashListener {
         void onFlash(int direction);
