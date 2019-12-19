@@ -84,7 +84,7 @@ public class XGridView extends FrameLayout {
         } else {
             L = widthMeasureSpec;
         }
-        mLength = (L & View.MEASURED_SIZE_MASK - mPadding * 5) / 4;
+        mLength = ((L & View.MEASURED_SIZE_MASK) - mPadding * 5) / 4;
         mLP = mLength + mPadding;
         //设置高度等于宽度
         super.onMeasure(L, L);
